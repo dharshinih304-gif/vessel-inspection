@@ -346,7 +346,7 @@ export default function VesselsPage() {
                   <button 
                     disabled={isSaving || !newVessel.vessel_name || !newVessel.imo_number}
                     onClick={async () => {
-                      let activeCompanyId = companyId || user?.company_id;
+                      let activeCompanyId: string | null = (companyId || user?.company_id) || null;
                       
                       if (activeCompanyId) {
                         const { data: verifyCo } = await supabase.from('companies').select('id').eq('id', activeCompanyId).single();

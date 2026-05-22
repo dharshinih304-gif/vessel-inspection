@@ -49,7 +49,7 @@ async function main() {
     let finalAns = activeItem?.ans || tmpl.ans || '';
     let finalComments = activeItem?.comments || tmpl.comments || '';
 
-    const baseItem = {
+    const baseItem: any = {
       rule_ref: tmpl.rule_ref,
       requirements: tmpl.requirements,
       ans: finalAns,
