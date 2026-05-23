@@ -416,7 +416,7 @@ export default function ReportDetailsPage() {
               submittedCategories.map((cat) => {
                 const isExpanded = expandedCategory === cat;
                 const recs = categoryRecords[cat] || [];
-                const yes = recs.filter(r => r.ans?.toUpperCase() === 'YES' || r.ans?.toUpperCase() === 'SATISFACTORY' || r.ans?.toUpperCase() === 'GOOD').length;
+                const filled = recs.filter(r => r.ans && r.ans.trim() !== '' && r.ans !== 'EMPTY').length;
                 const total = recs.length;
                 
                 return (
@@ -431,7 +431,7 @@ export default function ReportDetailsPage() {
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="text-[10px] font-black uppercase px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-full">
-                          {yes}/{total} Compliant
+                          {filled}/{total} Completed
                         </span>
                       </div>
                     </div>
