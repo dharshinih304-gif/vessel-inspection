@@ -79,41 +79,12 @@ export default function DashboardView({ companyId }: { companyId?: string }) {
 
         const allReports = reports || [];
         
-        // Calculate dynamic completion percentages to determine status
-        const reportsWithStatus = await Promise.all(allReports.map(async (report) => {
-            let percent = 0;
-            let hasNotSeen = false;
-            try {
-                if (report.category_name && report.category_name !== 'OVERALL') {
-                    let catData = await getTableData(report.category_name, { report_id: report.id });
-                        
-                    if ((!catData || catData.length === 0) && report.vessel_id) {
-                        const fallbackData = await getTableData(report.category_name, { vessel_id: report.vessel_id });
-                        if (fallbackData && fallbackData.length > 0) catData = fallbackData;
-                    }
-                    
-                    if (catData && catData.length > 0) {
-                        const total = catData.length;
-                        const answered = catData.filter((d: any) => 
-                            d.ans && 
-                            d.ans !== 'EMPTY' && 
-                            d.ans !== '' &&
-                            d.ans.toUpperCase() !== 'NOT SEEN' &&
-                            d.comments &&
-                            d.comments.trim() !== ''
-                        ).length;
-                        percent = Math.round((answered / total) * 100);
-                        hasNotSeen = catData.some((d: any) => d.ans && d.ans.toUpperCase() === 'NOT SEEN');
-                    }
-                }
-            } catch (e) {
-                console.error('Error calculating percentage for report', report.id, e);
-            }
-            // Respect DB status first, fallback to dynamic completion status
+        // Use DB status to determine if finalized instead of making N database queries to avoid slow response times
+        const reportsWithStatus = allReports.map((report) => {
             const dbStatus = report.status?.toUpperCase();
-            const isFinalized = dbStatus === 'FINALIZED' || (percent === 100 && !hasNotSeen);
-            return { ...report, dynamicStatus: isFinalized ? 'FINALIZED' : 'PENDING', completionRate: percent };
-        }));
+            const isFinalized = dbStatus === 'FINALIZED' || dbStatus === 'APPROVED';
+            return { ...report, dynamicStatus: isFinalized ? 'FINALIZED' : 'PENDING', completionRate: isFinalized ? 100 : 0 };
+        });
         
         // Calculate Stats
         let finalPending = reportsWithStatus.filter(r => r.dynamicStatus === 'PENDING');
